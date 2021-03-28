@@ -137,6 +137,7 @@ def minimax(board):
             scores[action] = maximum
         return min(scores, key=scores.get)
 
+
 def max_value(board):
     if terminal(board):
         return utility(board)
