@@ -3,6 +3,8 @@ Tic Tac Toe Player
 """
 
 import math
+import copy
+import random
 
 X = "X"
 O = "O"
@@ -49,15 +51,15 @@ def actions(board):
     return possible_actions
 
 
-def result(board, action):
+def result(manipulated_board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    current_player = player(board)
+    current_player = player(manipulated_board)
 
-    board[action[0]][action[1]] = current_player
+    manipulated_board[action[0]][action[1]] = current_player
 
-    return board
+    return manipulated_board
 
 
 def winner(board):
@@ -70,7 +72,7 @@ def winner(board):
             return line[0]
 
     diagonals = [[board[0][0], board[1][1], board[2][2]],
-                 board[0][2], board[1][1], board[2][0]]
+                 [board[0][2], board[1][1], board[2][0]]]
     for diagonal in diagonals:
         if all_the_same(diagonal):
             return diagonal[0]
@@ -85,10 +87,10 @@ def winner(board):
 
 
 def all_the_same(list):
-        if len(set(list)) <= 1:
-            return True
-        else:
-            return False
+    if len(set(list)) <= 1 and list[0] is not EMPTY:
+        return True
+    else:
+        return False
 
 
 def terminal(board):
@@ -96,7 +98,7 @@ def terminal(board):
     Returns True if game is over, False otherwise.
     """
     flattened_board = sum(board, [])
-    if flattened_board.count(EMPTY) >= 1:
+    if flattened_board.count(EMPTY) >= 1 and winner(board) is None:
         return False
     else:
         return True
@@ -119,4 +121,23 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    current_player = player(board)
+    possible_actions = actions(board)
+
+    for action in possible_actions:
+        manipulated_board = copy.deepcopy(board)
+        resulting_board = result(manipulated_board, action)
+        value = utility(resulting_board)
+
+        if current_player == X:
+            if value == 1:
+                return action
+            elif value == -1:
+                return action
+        elif current_player == O:
+            if value == -1:
+                return action
+            elif value == 1:
+                return action
+
+    return random.choice(possible_actions)
