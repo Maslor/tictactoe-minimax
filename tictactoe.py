@@ -51,11 +51,12 @@ def actions(board):
     return possible_actions
 
 
-def result(manipulated_board, action):
+def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    current_player = player(manipulated_board)
+    manipulated_board = copy.deepcopy(board)
+    current_player = player(board)
 
     manipulated_board[action[0]][action[1]] = current_player
 
@@ -98,10 +99,10 @@ def terminal(board):
     Returns True if game is over, False otherwise.
     """
     flattened_board = sum(board, [])
-    if flattened_board.count(EMPTY) >= 1 and winner(board) is None:
-        return False
-    else:
+    if winner(board) is not None or flattened_board.count(EMPTY) == 0:
         return True
+    else:
+        return False
 
 
 def utility(board):
@@ -121,23 +122,34 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    current_player = player(board)
-    possible_actions = actions(board)
 
-    for action in possible_actions:
-        manipulated_board = copy.deepcopy(board)
-        resulting_board = result(manipulated_board, action)
-        value = utility(resulting_board)
+    if player(board) == X:
+        scores = dict()
+        for action in actions(board):
+            minimum = min_value(result(board, action))
+            scores[action] = minimum
+        return max(scores, key=scores.get)
 
-        if current_player == X:
-            if value == 1:
-                return action
-            elif value == -1:
-                return action
-        elif current_player == O:
-            if value == -1:
-                return action
-            elif value == 1:
-                return action
+    else:
+        scores = dict()
+        for action in actions(board):
+            maximum = max_value(result(board, action))
+            scores[action] = maximum
+        return min(scores, key=scores.get)
 
-    return random.choice(possible_actions)
+def max_value(board):
+    if terminal(board):
+        return utility(board)
+    value = -2
+    for action in actions(board):
+        value = max(value, min_value(result(board, action)))
+    return value
+
+
+def min_value(board):
+    value = 2
+    if terminal(board):
+        return utility(board)
+    for action in actions(board):
+        value = min(value, max_value(result(board, action)))
+    return value
